@@ -16,12 +16,12 @@ jar {
 }
 
 repositories {
-	// 定义仓库为maven中心仓库
+    // 定义仓库为maven中心仓库
     mavenCentral()
 }
 
 dependencies {
-	// 编译时需要的外部依赖
+    // 编译时需要的外部依赖
     //compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
     compile 'commons-collections:commons-collections:3.2'
     compile fileTree(dir: 'lib', include: '*.jar')
