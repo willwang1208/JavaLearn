@@ -1,42 +1,18 @@
-# Mongodb-orm-v2
-An orm-struct for Mongodb java driver 2.13.2
+# Mongodb-press-test
 
-依赖于cglib自动生成java bean的包装类，实现java bean与com.mongodb.BasicDBObject之间的互转。
-（参考net.sf.cglib.beans.BeanMap源码修改）
+基于mongo-java-driver-3.2.2.jar编写简单的增删改查操作，通过设置线程数量控制各类操作对mongodb集群的访问压力。
 
-同时支持为java bean的变量定义别名（short name），作为com.mongodb.BasicDBObject的key的名字。
+通过linux_status_report.sh采集系统主要性能指标和mongodb主要状态参数，将输出结果导入Excel做图表分析，一方面可以观察mongodb的性能和特点，另一方面可以对比主机性能差异。
 
-实现了面向对象方式的DAO层，支持大部分Mongodb的命令。
+不同主机需要依据实际情况调整linux_status_report.sh中的一些参数。
 
-构建映射关系：
+一般步骤：
 
-    /**
-  
-	 * ORM构造器
-	 
-	 * @param dbNeedShard 数据库是否要分片
-	 
-	 * @param scanPackage 扫描的class目录
-	 
-	 * @param db          Mongodb连接
-	 
-    */
+1.导入测试数据
 
-    public OrmMongoBuilder(boolean dbNeedShard, String scanPackage, DB db) {
+2.各主机运行  nohup ./linux_status_report.sh >> /tmp/status_report.out &
 
-        super();
-        
-        this.dbNeedShard = dbNeedShard;
-        
-        this.scanPackage = scanPackage;
-        
-        this.db = db;
-        
-    }
-    
-调用：
+3.运行  ./mongodb_pt_runner.sh start  开始压测
 
-OrmMongoBuilder omb_local = new OrmMongoBuilder(true, "org.whb.app.vo.mongo", getDb());
-
-omb_local.build();
+4.运行  ./mongodb_pt_runner.sh stop  停止压测
 
