@@ -36,7 +36,7 @@ An orm-struct for Mongodb java driver 2.13.2
     
 调用：
 
-OrmMongoBuilder omb_local = new OrmMongoBuilder(true, "com.mfp.app.vo.mongo", getDb());
+OrmMongoBuilder omb_local = new OrmMongoBuilder(true, "org.whb.app.vo.mongo", getDb());
 
 omb_local.build();
 
