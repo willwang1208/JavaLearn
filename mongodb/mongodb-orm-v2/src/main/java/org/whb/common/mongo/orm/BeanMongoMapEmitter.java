@@ -49,7 +49,7 @@ import org.objectweb.asm.Type;
  *
  */
 class BeanMongoMapEmitter extends ClassEmitter {
-    private static final Type BEAN_MAP = TypeUtils.parseType("com.whb.common.mongo.orm.BeanMongoMap");
+    private static final Type BEAN_MAP = TypeUtils.parseType("org.whb.common.mongo.orm.BeanMongoMap");
     private static final Type FIXED_KEY_SET = TypeUtils.parseType("net.sf.cglib.beans.FixedKeySet");
     private static final Signature CSTRUCT_OBJECT = TypeUtils.parseConstructor("Object");
     private static final Signature CSTRUCT_STRING_ARRAY = TypeUtils.parseConstructor("String[]");

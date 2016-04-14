@@ -84,7 +84,7 @@ public class MongoDBManager {
             }
             
             //db0作为主库，主库初始化ORM、分片、索引等
-            OrmMongoBuilder omb_local = new OrmMongoBuilder(true, "com.mfp.app.vo.mongo", getDb());
+            OrmMongoBuilder omb_local = new OrmMongoBuilder(true, "org.whb.app.vo.mongo", getDb());
             omb_local.build();
             //元数据入库
             
