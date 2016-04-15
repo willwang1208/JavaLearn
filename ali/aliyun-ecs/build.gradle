@@ -2,7 +2,6 @@
 //打包（清除测试编译检查构建）执行：gradle clean test compileJava check build
 //发布执行：gradle uploadArchives
 
-// 设置源码字符集
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
@@ -15,25 +14,20 @@ version = '1.0'
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Quickstart',
+        attributes 'Implementation-Title': 'Aliyun ECS Manager',
                    'Implementation-Version': version
     }
 }
 
 repositories {
-    // 定义仓库为maven中心仓库
     mavenCentral()
 }
 
 dependencies {
-    // 编译时需要的外部依赖
-    //compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-    compile 'commons-collections:commons-collections:3.2'
-    compile fileTree(dir: 'lib', include: '*.jar')
-    //compile files('lib/raffles.jar')
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    compile 'commons-logging:commons-logging:1.2'
+    compile files('lib/taobao-sdk-java-aliyun_dns-20160125.jar')
     
-    // 测试期编译时需要的额外依赖
-    //testCompile group: 'junit', name: 'junit', version: '4.+'
     testCompile 'junit:junit:4.+'
 }
 
