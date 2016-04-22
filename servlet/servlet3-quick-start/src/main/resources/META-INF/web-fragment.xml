@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
+        version="3.0"
+        metadata-complete="false">
+
+<!-- 可以将一个项目分成N个模块，然后通过扫描模块下的META-INF/web-fragment.xml进行装配 -->
+    <name>fragment_demo</name>
+
+    <!-- <filter>
+        <filter-name>fragment_filter_1</filter-name>
+        <filter-class>org.whb.web.listener.DynamicInitListener.DemoListener</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>fragment_filter_1</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>fragment_servlet_1</servlet-name>
+        <servlet-class>org.whb.web.listener.DynamicInitListener.DemoServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>fragment_servlet_1</servlet-name>
+        <url-pattern>/fragment_1</url-pattern>
+    </servlet-mapping> -->
+
+</web-fragment>
