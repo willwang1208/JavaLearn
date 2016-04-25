@@ -58,7 +58,8 @@ public class InstanceOperator {
         }
     }
 
-    public Instance create(Instance model, String vswitchId, String securityGroupId, String ip, String pwd, 
+    public Instance create(Instance model, String vswitchId, String securityGroupId, 
+            String ip, String pwd, String ioOptimized, 
             Disk sysDiskModel, List<Disk> dataDiskModels) throws ApiException{
         Instance instance = getByName(model.getRegionId(), model.getInstanceName());
         if(instance != null){
@@ -75,7 +76,7 @@ public class InstanceOperator {
 //        request.setInternetMaxBandwidthIn(model.getInternetMaxBandwidthIn());
 //        request.setInternetMaxBandwidthOut(model.getInternetMaxBandwidthOut());
         request.setHostName(model.getHostName());
-//        request.setIoOptimized(model.geto);
+        request.setIoOptimized(ioOptimized);
         
         request.setSecurityGroupId(securityGroupId);
         request.setvSwitchId(vswitchId);
@@ -119,13 +120,6 @@ public class InstanceOperator {
                 index ++;
             }
         }
-        
-//        request = new CreateInstanceRequest();
-//        request.setInstanceName(model.getInstanceName());
-//        request.setRegionId(model.getRegionId());
-//        request.setImageId(model.getImageId());
-//        request.setInstanceType(model.getInstanceType());
-//        request.setSecurityGroupId("G1069666945095568");
         
         CreateInstanceResponse response = client.execute(request);
         if(response.isSuccess()){

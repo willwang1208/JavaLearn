@@ -404,6 +404,7 @@ public class AliGo {
         String regionId_tbc_general = properties.getPropertyValue("Instance.general.Copy.RegionId");
         String regionId_general = properties.getPropertyValue("Instance.general.RegionId");
         String password_general = properties.getPropertyValue("Instance.general.Password");
+        String ioOptimized_general = properties.getPropertyValue("Instance.general.IoOptimized");
         
         // new operators
         InstanceOperator instanceOper = new InstanceOperator(client);
@@ -427,6 +428,7 @@ public class AliGo {
             String regionId = properties.getPropertyValue("Instance." + index + ".RegionId");
             String instanceName = properties.getPropertyValue("Instance." + index + ".InstanceName");
             String password = properties.getPropertyValue("Instance." + index + ".Password");
+            String ioOptimized = properties.getPropertyValue("Instance." + index + ".IoOptimized");
             
             // if null then set general value
             regionId_tbc = regionId_tbc == null ? regionId_tbc_general : regionId_tbc;
@@ -482,7 +484,7 @@ public class AliGo {
             
             // create instance
             Instance instance = instanceOper.create(model_instance, vSwitch.getvSwitchId(), 
-                    securityGroup.getSecurityGroupId(), ip_tbc, password, 
+                    securityGroup.getSecurityGroupId(), ip_tbc, password, ioOptimized, 
                     model_disk_sys, model_disk_datas);
             
             result.add(instance);
