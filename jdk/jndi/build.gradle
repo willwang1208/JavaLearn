@@ -1,0 +1,50 @@
+//创建eclipse项目执行：gradle eclipse
+//打包（清除测试编译检查构建）执行：gradle clean test compileJava check build
+//发布执行：gradle uploadArchives
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'findbugs'
+
+version = '1.0'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Jndi Demo',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    //compile 'commons-logging:commons-logging:1.2'
+    //compile files('lib/taobao-sdk-java-aliyun_dns-20160125.jar')
+    compile 'com.sun.messaging.mq:fscontext:4.4.2'
+    
+    testCompile 'junit:junit:4.+'
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+findbugs {
+    ignoreFailures = true
+    sourceSets = [sourceSets.main]
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
