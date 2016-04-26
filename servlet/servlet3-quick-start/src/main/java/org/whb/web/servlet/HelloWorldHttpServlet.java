@@ -3,6 +3,7 @@ package org.whb.web.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
@@ -60,6 +61,9 @@ public class HelloWorldHttpServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         StackTraceUtil.printLocation();
         
+        // 设置刷新自动加载的事件间隔为 5 秒
+        resp.setIntHeader("Refresh", 5);
+        
         resp.setContentType("text/html;charset=UTF-8");
         PrintWriter out = resp.getWriter();
         try {
@@ -69,7 +73,7 @@ public class HelloWorldHttpServlet extends HttpServlet {
             out.println("<title>HelloWorldHttpServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h2>HelloWorldHttpServlet</h2>");
+            out.println("<h2>HelloWorldHttpServlet " + new Date() + "</h2>");
             out.println("<br />");
             out.println("Private attribute sharedMsg: " + sharedMsg);
             out.println("<br />");

@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-          http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	id="servlet-quick-start" version="3.0">
 
-    <display-name>Archetype Created Web Application</display-name>
+    <display-name>Servlet Quick Start Web Application</display-name>
 
     <!-- <servlet>
-        <servlet-name>MyFirstServlet</servlet-name>
-        <servlet-class>com.howtodoinjava.servlets.MyFirstServlet</servlet-class>
+        <servlet-name>HelloWorld</servlet-name>
+        <servlet-class>org.whb.web.servlet.HelloWorldHttpServlet</servlet-class>
+        <init-param>
+			<param-name>shared-msg</param-name>
+			<param-value>hello world</param-value>
+		</init-param>
+		<load-on-startup>3</load-on-startup>
+		<async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
-        <servlet-name>MyFirstServlet</servlet-name>
-        <url-pattern>/MyFirstServlet</url-pattern>
+        <servlet-name>HelloWorld</servlet-name>
+        <url-pattern>/hello-world</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HelloWorld</servlet-name>
+        <url-pattern>/hello-world/*</url-pattern>
     </servlet-mapping> -->
 
 </web-app>

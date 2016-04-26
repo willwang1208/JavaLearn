@@ -82,15 +82,15 @@ public class NioWriteAsyncServlet extends HttpServlet {
 
         @Override
         public void onWritePossible() throws IOException {
-            // TODO Auto-generated method stub
-         // isReady : 类似于ServletInputStream的isReady，如果有可以无阻塞写数据(从false变为true时)，返回true
+            // output.isReady()如果有可以无阻塞写数据(从false变为true时)，返回true
             boolean isClose = false;
             while(output.isReady()) {
                 output.write((byte)'i');
                 count++;
 
-                //此处即需要用户判断什么时候结束写，如果不及时处理，可能遭遇timeout
-                if(count >= (1024 * 1000)) { //写1024 * 1000个就结束 即完成写（目的是发现阻塞的情况）
+                //增加判断条件触发asyncContext.complete()
+                //写1024 * 1000个就结束，即完成写
+                if(count >= (1024 * 1000)) {
                     isClose = true;
                     System.out.println("服务器写完1024 * 1000个字节了");
                     output.close();
@@ -98,17 +98,15 @@ public class NioWriteAsyncServlet extends HttpServlet {
                     break;
                 }
             }
-            if(!isClose) {//忽略写完的情况
+            // 如果未写完出现阻塞，output.isReady()返回false
+            if(!isClose) {
                 //如果此时还输出true，表示还可以往外写 即速度很快
-                System.out.println("服务器当前可写:" + output.isReady());//即阻塞时，返回false
+                System.out.println("Server blocked. output.isReady(): " + output.isReady());
             }
         }
 
         @Override
         public void onError(Throwable t) {
-            // TODO Auto-generated method stub
-          //使用非阻塞I/O写失败时回调
-            System.out.println("\n服务器写入失败了");
             t.printStackTrace(System.out);
             asyncContext.complete();
         }

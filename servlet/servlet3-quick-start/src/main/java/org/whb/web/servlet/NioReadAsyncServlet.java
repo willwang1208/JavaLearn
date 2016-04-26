@@ -80,27 +80,23 @@ public class NioReadAsyncServlet extends HttpServlet {
 
         @Override
         public void onDataAvailable() throws IOException {
-          //当有可用数据时由容器发起回调（容器仅当isReady方法返回true时才调用，直到返回false）
-            //is.isReady:如果有可以无阻塞获取的数据时(从false变为true时)，返回true，即当该方法返回true时去读取数据，肯定是不阻塞的
-
             //当input.isReady()返回true时去读取数据，肯定是不阻塞的
-            System.out.println("服务器读取到数据:>>");
+            System.out.println("Got data:>>>>");
             int ch = -1;
             while(input.isReady() && ((ch = input.read()) != -1)) {
                 System.out.write((char) ch);
             }
-            System.out.println("<<等待..");
+            System.out.println("<<<< Waiting ...");
         }
 
         @Override
         public void onAllDataRead() throws IOException {
-            System.out.println("服务器数据读取完毕:" + input.isFinished());
+            System.out.println("Server read completely: " + input.isFinished());
             asyncContext.complete();
         }
 
         @Override
         public void onError(Throwable t) {
-            System.out.println("\n服务器读取失败");
             t.printStackTrace(System.out);
             asyncContext.complete();
         }

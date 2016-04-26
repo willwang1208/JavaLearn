@@ -9,6 +9,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -80,12 +81,27 @@ public class AsyncHttpServlet extends HttpServlet {
             @Override
             public void run() {
                 try {
+                    ServletResponse response = asyncContext.getResponse();
+                    PrintWriter out = response.getWriter();
+                    
+                    // 如果Server容器使用的不是实现NIO的Connector，将不会看到response.flushBuffer()的输出，
+                    // 而会在asyncContext.complete()时一次性输出
                     Thread.sleep(3L * 1000);
-                    PrintWriter out = asyncContext.getResponse().getWriter();
-                    out.write("over");
-                    asyncContext.complete();
+                    out.write("publish message <br />");
+                    response.flushBuffer();  // 如果Client断开连接这里将抛出异常
+                    
+                    Thread.sleep(3L * 1000);
+                    out.write("publish message <br />");
+                    response.flushBuffer();
+                    
+                    Thread.sleep(3L * 1000);
+                    out.write("over <br />");
+                    
+//                    asyncContext.complete();
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    asyncContext.complete();
                 }
             }
         });
