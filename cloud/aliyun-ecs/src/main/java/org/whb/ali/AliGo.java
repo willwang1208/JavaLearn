@@ -434,6 +434,7 @@ public class AliGo {
             regionId_tbc = regionId_tbc == null ? regionId_tbc_general : regionId_tbc;
             regionId = regionId == null ? regionId_general : regionId;
             password = password == null ? password_general : password;
+			ioOptimized = ioOptimized == null ? ioOptimized_general : ioOptimized;
             
             // get instance, system disk and data disks to be copy.
             Instance instance_tbc = instanceOper.get(regionId_tbc, id_tbc);

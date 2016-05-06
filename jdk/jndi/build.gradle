@@ -24,9 +24,6 @@ repositories {
 }
 
 dependencies {
-    //compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
-    //compile 'commons-logging:commons-logging:1.2'
-    //compile files('lib/taobao-sdk-java-aliyun_dns-20160125.jar')
     compile 'com.sun.messaging.mq:fscontext:4.4.2'
     
     testCompile 'junit:junit:4.+'
