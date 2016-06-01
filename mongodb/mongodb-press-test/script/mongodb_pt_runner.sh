@@ -1,17 +1,19 @@
 #!/bin/bash 
 
 pt_start(){
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find" 2 2000000000 >> /dev/null 2>&1 &
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find 2 2000000000 >> /dev/null 2>&1 &
     
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find_first" 40 2000000000 >> /dev/null 2>&1 &
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_first 40 2000000000 >> /dev/null 2>&1 &
     
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find_insert_one" 10 2000000000 >> /dev/null 2>&1 &
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_in 5 2000000000 >> /dev/null 2>&1 &
     
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find_insert_many" 5 2000000000 >> /dev/null 2>&1 &
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_insert_one 10 2000000000 >> /dev/null 2>&1 &
     
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find_update_one" 10 2000000000 >> /dev/null 2>&1 &
+    #/opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_insert_many 5 2000000000 >> /dev/null 2>&1 &
     
-    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar "find_delete_one" 5 2000000000 >> /dev/null 2>&1 &
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_update_one 10 2000000000 >> /dev/null 2>&1 &
+    
+    /opt/jdk1.8.0_66/bin/java -jar MongodbPressTest.jar 172.31.32.2:20000 jelly_ios user_data find_delete_one 5 2000000000 >> /dev/null 2>&1 &
 }
 
 pt_stop(){

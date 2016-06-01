@@ -6,33 +6,43 @@ import java.util.Random;
 
 import org.bson.Document;
 
+import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
-
+/**
+ * 集合的_id必须是连续的正整数
+ * @author whb
+ *
+ */
 public class MongodbOperator {
     
-    /** user_data集合中存在_id是连续正整数的20113711条数据文档  */
-    public static String sourceCollectionName = "user_data";
+    int max_Id;
     
-    public static String copyCollectionName = "user_data_copy";
+    UpdateOptions update_options;
+
+    MongoCollection<Document> collection;
     
-    public static int max_userId = 20113711;
+    MongoCollection<Document> collection_copy;
     
-    UpdateOptions upsert_true = new UpdateOptions().upsert(true);
+    public MongodbOperator(MongoClient client, String dbName, String collectionName) {
+        MongoDatabase database = client.getDatabase(dbName);
+        
+        this.collection = database.getCollection(collectionName);
+        this.collection_copy = database.getCollection(collectionName + "_copy");
+        this.update_options = new UpdateOptions().upsert(true);
+        this.max_Id = (int)collection.count();
+    }
 
     /**
      * 随机_id查询
      * @param database
      */
-    public Document find_first(MongoDatabase database){
-        MongoCollection<Document> collection = database.getCollection(sourceCollectionName);
-        
-        int userId = new Random().nextInt(max_userId) + 10000;
-        
+    public Document find_first(){
+        int userId = new Random().nextInt(max_Id) + 1;
         return collection.find(Filters.eq("_id", userId)).first();
     }
     
@@ -40,14 +50,12 @@ public class MongodbOperator {
      * 随机_ids查询
      * @param database
      */
-    public List<Document> find_in(MongoDatabase database){
-        MongoCollection<Document> collection = database.getCollection(sourceCollectionName);
-        
-        int len = 20;
-        Integer[] userIds = new Integer[len];
+    public List<Document> find_in(){
+        int length_ids = 40;
+        Integer[] userIds = new Integer[length_ids];
         Random random = new Random();
-        for(int i = 0; i < len; i ++){
-            userIds[i] = random.nextInt(max_userId) + 10000;
+        for(int i = 0; i < length_ids; i ++){
+            userIds[i] = random.nextInt(max_Id) + 1;
         }
         
         List<Document> result = new ArrayList<>();
@@ -61,18 +69,15 @@ public class MongodbOperator {
     }
     
     /**
-     * 随机查询
-     * skip[1, 10000]
+     * 随机游标查询
      * limit[100, 10099]
      * @param database
      */
-    public void find(MongoDatabase database){
-        MongoCollection<Document> collection = database.getCollection(sourceCollectionName);
-
-        int skip = new Random().nextInt(10000) + 1;
+    public void find(){
+        int start = new Random().nextInt(max_Id) + 1;
         int limit = new Random().nextInt(10000) + 100;
         
-        FindIterable<Document> iterable = collection.find().skip(skip).limit(limit);
+        FindIterable<Document> iterable = collection.find(Filters.gte("_id", start)).limit(limit);
         MongoCursor<Document> cursor = iterable.iterator();
         while (cursor.hasNext()) {
             cursor.next();
@@ -83,13 +88,11 @@ public class MongodbOperator {
      * _id查询并插入
      * @param database
      */
-    public void find_insert_one(MongoDatabase database){
-        Document document = find_first(database);
-        
+    public void find_insert_one(){
+        Document document = find_first();
         if(document != null){
-            MongoCollection<Document> collection = database.getCollection(copyCollectionName);
 //            collection.insertOne(document);
-            collection.replaceOne(Filters.eq("_id", document.getInteger("_id")), document, upsert_true);
+            collection_copy.replaceOne(Filters.eq("_id", document.getInteger("_id")), document, update_options);
         }
     }
     
@@ -97,12 +100,10 @@ public class MongodbOperator {
      * _ids查询并插入
      * @param database
      */
-    public void find_insert_many(MongoDatabase database){
-        List<Document> documents = find_in(database);
-        
+    public void find_insert_many(){
+        List<Document> documents = find_in();
         if(documents != null && documents.size() != 0){
-            MongoCollection<Document> collection = database.getCollection(copyCollectionName);
-            collection.insertMany(documents);
+            collection_copy.insertMany(documents);
         }
     }
     
@@ -110,13 +111,11 @@ public class MongodbOperator {
      * _id查询并更新
      * @param database
      */
-    public void find_update_one(MongoDatabase database){
-        Document document = find_first(database);
-        
+    public void find_update_one(){
+        Document document = find_first();
         if(document != null){
-            MongoCollection<Document> collection = database.getCollection(sourceCollectionName);
 //            collection.updateOne(Filters.eq("_id", document.getInteger("_id")), );
-            collection.replaceOne(Filters.eq("_id", document.getInteger("_id")), document, upsert_true);
+            collection.replaceOne(Filters.eq("_id", document.getInteger("_id")), document, update_options);
         }
     }
     
@@ -124,12 +123,10 @@ public class MongodbOperator {
      * _id查询并删除
      * @param database
      */
-    public void find_delete_one(MongoDatabase database){
-        Document document = find_first(database);
-        
+    public void find_delete_one(){
+        Document document = find_first();
         if(document != null){
-            MongoCollection<Document> collection = database.getCollection(copyCollectionName);
-            collection.deleteOne(Filters.eq("_id", document.getInteger("_id")));
+            collection_copy.deleteOne(Filters.eq("_id", document.getInteger("_id")));
         }
     }
 }

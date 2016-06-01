@@ -16,22 +16,21 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
 /**
- * /opt/jdk1.8.0_66/bin/java -jar MongodbSplitJumboChunk.jar > result_file
- * /opt/jdk1.8.0_66/bin/java -jar MongodbSplitJumboChunk.jar only > tmp_cmds_file
+ * /opt/jdk1.8.0_66/bin/java -jar MongodbSplitJumboChunk.jar 172.31.48.14:20000 > result_file
+ * /opt/jdk1.8.0_66/bin/java -jar MongodbSplitJumboChunk.jar 172.31.48.14:20000 only > tmp_cmds_file
  * 
  * @author whb
  *
  */
 public class SplitJumbo {
     
-    public static String uri = "mongodb://127.0.0.1:20000/?maxPoolSize=";
-//    public static String uri = "mongodb://10.45.139.95:20000/?maxPoolSize=";
-//    public static String uri = "mongodb://172.16.0.3:20001/?maxPoolSize=";
-    
     public static void main(String[] args) {
-        String getCmdOnly = args[0];
+        String host = args[0];   //172.31.48.14:20000
+        String getCmdOnly = args[1];
         
-        final MongoClient client = new MongoClient(new MongoClientURI(uri + 5));
+        String uri = "mongodb://" + host + "/?maxPoolSize=5";
+        
+        final MongoClient client = new MongoClient(new MongoClientURI(uri));
         
         MongoDatabase configdb = client.getDatabase("config");
         
@@ -53,14 +52,14 @@ public class SplitJumbo {
         }
         
         //sh.splitAt("jelly_360.user_type_data",{_id:NumberLong("-9123171244068174933")})
-//        String format = "sh._adminCommand({split: \"%s\", middle: {_id: NumberLong(\"%d\")}}, true)";
+//      String format = "sh._adminCommand({split: \"%s\", middle: {_id: NumberLong(\"%d\")}}, true)";
         String format = "sh.splitAt(\"%s\",{_id:NumberLong(\"%d\")})";
         
         List<String> cmds = new ArrayList<>();
         for(Document jumbo: jumbos){
             String ns = jumbo.getString("ns");
             long min = getRangeValue(jumbo.get("min", Document.class).get("_id"));
-            long max = getRangeValue(jumbo.get("max", Document.class).getLong("_id"));
+            long max = getRangeValue(jumbo.get("max", Document.class).get("_id"));
             long mid = (max - min) / 2 + min;
             
             cmds.add(String.format(format, ns, mid));
