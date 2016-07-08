@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd">
+    
+    <import resource="spring-helloworld-tobeimport.xml"/>
+    
+    <bean id="helloWorld_B_2" name="helloWorld_B_2" autowire="byType" 
+    	class="org.whb.springmvc.service.impl.HelloWorldServiceImpl" 
+		init-method="postConstruct" destroy-method="preDestroy" />
+		
+	<bean id="helloWorld_B_3" name="helloWorld_B_3" autowire="byName" 
+    	class="org.whb.springmvc.service.impl.HelloWorldServiceImpl" />
+	
+	<bean id="helloWorld_B_4" name="helloWorld_B_4" 
+    	class="org.whb.springmvc.service.impl.HelloWorldServiceImpl" />
+	
+	<bean id="leaderUser" name="leaderUser" class="org.whb.springmvc.entity.User">
+		<property name="name" value="only one leader"/>
+		<property name="id" value="#{new java.util.Random().nextInt(1000)}"/>
+	</bean>
+	
+	<bean id="followerUser" class="org.whb.springmvc.entity.User" scope="prototype">
+		<property name="name" value="a follower"/>
+		<property name="id" value="#{new java.util.Random().nextInt(1000)}"/>
+	</bean>
+</beans>

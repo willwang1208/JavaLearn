@@ -1,0 +1,9 @@
+yieldUnescaped '<!DOCTYPE html>'
+html {
+  head {
+    title('hello groovy templates')
+  }
+  body {
+      div("this is a groovy page. hello $user")
+  }
+}

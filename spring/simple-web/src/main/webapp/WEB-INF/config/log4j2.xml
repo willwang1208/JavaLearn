@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!-- 
+log级别: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+参考: https://logging.apache.org/log4j/2.x/manual/appenders.html
+ -->
+<!-- 
+status: 用于设置log4j2自身内部的信息输出，可以不设置(OFF)
+monitorInterval: 每隔1800秒，自动监控该配置文件是否有变化，如果变化，则根据文件内容重新配置
+ -->
+<Configuration status="WARN" monitorInterval="1800">
+	<!-- 声明各种自定义Property，给后面引用 -->
+	<Properties>
+        <property name="log_pattern_1">%d{HH:mm:ss} %-4level - %msg%xEx%n</property>
+        <property name="log_pattern_2">%d{yyyy-MM-dd HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n</property>
+        <property name="log_pattern_3">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</property>
+        
+        <property name="file_name">logs/out.log</property>
+        
+        <property name="rolling_file_r_name">/data/log/ios/r.log</property>
+		<property name="rolling_file_r_pattern">/data/log/ios/$${date:yyyy-MM}/r.%d{yyyy-MM-dd}-%i.log.gz</property>
+		
+		<property name="rolling_file_g_name">/data/log/ios/g.log</property>
+		<property name="rolling_file_g_pattern">/data/log/ios/g.log.%d{yyyy-MM-dd-HH}.log</property>
+    </Properties>
+    
+    <!--定义各种Appender-->
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+        	<!-- 过滤器：只输出level及以上级别的信息(onMatch)，其他的直接拒绝(onMismatch) -->  
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!-- 过滤器：指定接收日志信息的时间区间 -->
+            <!-- <TimeFilter start="05:00:00" end="23:30:00" onMatch="ACCEPT" onMismatch="DENY"/> -->
+            <PatternLayout pattern="${log_pattern_3}" />
+        </Console>
+        
+        <File name="file" fileName="${file_name}" append="true">
+        	<PatternLayout pattern="${log_pattern_2}"/>
+        </File>
+        
+        <RollingFile name="rolling_file_r" fileName="${rolling_file_r_name}" filePattern="${rolling_file_r_pattern}">
+            <PatternLayout pattern="${log_pattern_1}"/>
+            <!-- 设置文件超过500M则自动存入按年份-月份建立的文件夹下面并进行压缩 -->
+            <SizeBasedTriggeringPolicy size="500MB"/>
+            <!-- 设置同一文件夹下最多20个文件 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+        
+        <RollingFile name="rolling_file_g" fileName="${rolling_file_g_name}" filePattern="${rolling_file_g_name}">
+            <PatternLayout pattern="${log_pattern_3}"/>
+            <!-- 设置每1小时切分一次日志 -->
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+    </Appenders>
+    
+    <!--定义Logger，引用Appender，使生效 -->
+    <Loggers>
+    	<!-- 默认的Logger，其他Logger继承自Root，如果其他Logger设置additivity="true"则Root会输出一次 -->
+        <Root level="error">
+            <AppenderRef ref="console" />
+        </Root>
+        
+        <Logger name="G" level="info" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
+        
+        <Logger name="R" level="info" additivity="false">
+            <AppenderRef ref="rolling_file_r"/>
+        </Logger>
+    </Loggers>
+</Configuration>

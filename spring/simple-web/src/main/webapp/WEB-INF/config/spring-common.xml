@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:util="http://www.springframework.org/schema/util" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util-3.0.xsd 
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/task
+        http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+    
+    <!-- ############################### 扫描注解 ############################### -->
+    <!-- 当 Spring 容器启动时，AutowiredAnnotationBeanPostProcessor将扫描Spring容器中所有 Bean，
+        当发现 Bean 中拥有@Autowired 注释时就找到和其匹配（默认按类型匹配）的 Bean，并注入到对应的地方中去  -->
+    <!-- <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" /> -->
+    <!-- 常用注解
+    @Controller 声明Action组件
+    @Service 声明Service组件@Service("myMovieLister")
+    @Repository 声明Dao组件
+    @Component 泛指组件, 当不好归类时.
+    @RequestMapping("/menu") 请求映射
+    @Resource 用于注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
+    @Autowired 用于注入，(srping提供的) 默认按类型装配
+    @Transactional( rollbackFor={Exception.class}) 事务管理
+    @ResponseBody
+    @Scope("prototype") 设定bean的作用域
+     -->
+    
+    <!-- <context:component-scan base-package="org.will.web.spring"/> -->
+    <context:component-scan base-package="org.will.web.spring">
+    	<!-- 排除Controller -->
+		<context:exclude-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
+	</context:component-scan>
+    <context:component-scan base-package="org.will.web.mybatis"/>
+    <!-- <context:component-scan base-package="com.mfp">
+        <context:exclude-filter expression="org.springframework.stereotype.Controller" type="annotation" />
+    </context:component-scan> -->
+    
+    
+    
+    <!-- ############################### 属性配置 ############################### -->
+    <!-- 使db.properties里的配置可直接在spring xml文件中或者spring注解的属性中使用    ${} -->
+    <!-- ignore-unresolvable="true" 表示允许多个property-placeholder，否则只生效第一个 -->
+    <context:property-placeholder location="WEB-INF/config/db.properties" ignore-unresolvable="true"/>
+    <context:property-placeholder location="WEB-INF/config/service.properties" ignore-unresolvable="true"/>
+    
+    
+    
+    <util:properties id="appConfig" location="WEB-INF/config/app.properties" />
+    
+    
+    <!-- ############################### 数据源 ############################### -->
+    <!-- 数据源 ,c3p0连接池-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close" >
+        <property name="user" value="${mysql.base.username}"/>
+        <property name="password" value="${mysql.base.password}"/>
+        <property name="driverClass" value="${mysql.driver}"/>
+        <property name="jdbcUrl" value="${mysql.base.url}"/>
+        <property name="initialPoolSize" value="${mysql.base.initialPoolSize}"/>
+        <property name="maxPoolSize" value="${mysql.base.maxPoolSize}"/>
+        <property name="minPoolSize" value="${mysql.base.minPoolSize}"/>
+        <property name="maxIdleTime" value="${mysql.base.maxIdleTime}"/>
+        <property name="acquireIncrement" value="${mysql.base.acquireIncrement}"/>
+        <property name="maxStatements" value="${mysql.base.maxStatements}"/>
+        <property name="idleConnectionTestPeriod" value="${mysql.base.idleConnectionTestPeriod}"/>
+        <property name="acquireRetryAttempts" value="${mysql.base.acquireRetryAttempts}"/>
+        <property name="breakAfterAcquireFailure" value="${mysql.base.breakAfterAcquireFailure}"/>
+        <property name="testConnectionOnCheckout" value="${mysql.base.testConnectionOnCheckout}"/>
+    </bean>
+    <!-- 数据源 ,DBCP连接池-->
+    <!-- 
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@192.168.3.141:1521:xxx"/>
+        <property name="username" value="xxxdb"/>
+        <property name="password" value="xxxdb"/>
+        <property name="initialSize" value="2"/>
+        <property name="maxActive" value="10"/>
+        <property name="maxIdle" value="10"/>
+        <property name="maxWait" value="1000"/>
+        <property name="poolPreparedStatements" value="true"/>
+    </bean>
+     -->
+    <!-- 数据源 ,jndi-->
+    <!-- 
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName">
+            <value>jdbc/xxx</value>
+        </property>
+    </bean>
+     -->
+
+    <!-- mybatis 模板 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- 该配置文件用来指定Mapper映射文件的位置 ，如果映射文件与相应的接口同名，且在同一路径下，那么可以不配置该选项 -->
+        <property name="mapperLocations" value="classpath*:org/will/web/mybatis/resource/*.xml" />
+    </bean>
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>
+
+    <!-- JDBC 模板 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <!-- ds事务管理器 -->
+    <bean id="transactionManager_ds" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 用注解来实现事务管理 依赖aopalliance-1.0.jar-->
+    <tx:annotation-driven transaction-manager="transactionManager_ds" proxy-target-class="true"/>
+    
+    <!-- 定时任务，用于支持@Scheduled-->
+    <task:annotation-driven/>
+    
+    <!-- 用于持有ApplicationContext,可以使用SpringContextHolder.getBean('xxxx')的静态方法得到spring bean对象 -->  
+    <bean class="org.will.web.spring.SpringContextHolder" lazy-init="false" />  
+    
+</beans>
