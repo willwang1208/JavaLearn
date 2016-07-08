@@ -14,6 +14,7 @@ pt_start(){
     #`$head_str jdbc:postgresql://127.0.0.1:31001/jelly_ios jelly null check_in find_insert_one 10 5 >> log_psql_pt.log 2>&1 &`
     #`$head_str jdbc:postgresql://127.0.0.1:31001/jelly_ios jelly null check_in find_delete_one 10 5 >> log_psql_pt.log 2>&1 &`
     #`$head_str jdbc:postgresql://127.0.0.1:31001/jelly_ios jelly null check_in find_insert_many 10 5 >> log_psql_pt.log 2>&1 &`
+    #`$head_str jdbc:postgresql://127.0.0.1:31001/jelly_ios jelly null check_in find 10 5 >> log_psql_pt.log 2>&1 &`
 }
 
 pt_stop(){
