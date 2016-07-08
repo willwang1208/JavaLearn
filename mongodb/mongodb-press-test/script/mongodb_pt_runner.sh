@@ -1,15 +1,18 @@
 #!/bin/bash 
 
 pt_start(){
-    head_str="/opt/jdk1.8.0_66/bin/java -jar MongodbPressTest-jar-with-dependencies.jar 172.31.32.2:20000 jelly_ios"
+    head_str="/opt/jdk1.8.0_66/bin/java -jar MongodbPressTest-jar-with-dependencies.jar"
+
+    `$head_str 172.31.32.2:20000 jelly_ios check_in find_first 80 5 >> log_mongodb_pt.log 2>&1 &`
+    `$head_str 172.31.32.3:20000 jelly_ios check_in find_first 80 5 >> log_mongodb_pt.log 2>&1 &`
     
-    `$head_str user_data find 2 5 >> log_mongodb_pt_all.log 2>&1 &`
-    `$head_str user_data find_first 50 5 >> log_mongodb_pt_all.log 2>&1 &`
-    `$head_str user_data find_in 5 5 >> log_mongodb_pt_all.log 2>&1 &`
-    `$head_str user_data find_update_one 10 5 >> log_mongodb_pt_all.log 2>&1 &`
-    `$head_str user_data find_insert_one 10 5 >> log_mongodb_pt_all.log 2>&1 &`
-    `$head_str user_data find_delete_one 10 5 >> log_mongodb_pt_all.log 2>&1 &`
-    ###`$head_str user_data find_insert_many 5 5 >> log_mongodb_pt_all.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_first 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_in 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_update_one 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_insert_one 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_delete_one 80 5 >> log_mongodb_pt.log 2>&1 &`
+    #`$head_str 127.0.0.1:20000 jelly_ios check_in find_insert_many 80 5 >> log_mongodb_pt.log 2>&1 &`
 }
 
 pt_stop(){
