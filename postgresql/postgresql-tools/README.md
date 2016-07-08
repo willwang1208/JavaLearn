@@ -22,4 +22,5 @@ nohup /opt/jdk1.8.0_66/bin/java -jar postgresql-tools-jar-with-dependencies.jar 
 
 ./psql_pt_runner.sh stop
 
+log输出项：[tag] [时间戳] [时间间隔内的执行次数] [总执行次数] [时间间隔内的异常次数] [总异常次数] [每秒执行次数] [每秒无异常执行次数] [方法平均执行时间ms]
 
