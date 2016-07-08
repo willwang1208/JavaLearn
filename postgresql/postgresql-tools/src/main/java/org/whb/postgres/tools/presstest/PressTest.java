@@ -21,21 +21,16 @@ public class PressTest {
         String tableName = args[3];
         String method = args[4];
         int threadCount = Integer.parseInt(args[5]);
+        int poolSize = threadCount;
         int interval = Integer.parseInt(args[6]);   //采集时间间隔，单位秒，0表示不监视
         
-        PostgresqlClient client = new PostgresqlClient(driverClass, url, user, password, threadCount + 1);
+        PostgresqlClient client = new PostgresqlClient(driverClass, url, user, password, poolSize);
         client.initialize();
         
         try {
             PostgresqlOperator operator = new PostgresqlOperator(client, tableName);
             exec(operator, method, threadCount, interval);
-            
-//          exec(operator, "find_first", 10, 1);
-//          exec(operator, "find", 10, 100);
-//          exec(operator, "find_insert_one", 10, 1);
-//          exec(operator, "find_insert_many", 10, 1);
-//          exec(operator, "find_update_one", 10, 1);
-//          exec(operator, "find_delete_one", 10, 1);
+//          exec(operator, "find_first_not_ps", 10, 1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -100,6 +95,20 @@ public class PressTest {
                     @Override
                     public void execute() throws SQLException {
                         operator.find_in();
+                    }
+                });
+            }else if("find_first_not_ps".equals(methodName)){
+                pressJob = new PressJob(new PressJob.PostgresqlOperatorAdapter() {
+                    @Override
+                    public void execute() throws SQLException {
+                        operator.find_first_not_ps();
+                    }
+                });
+            }else if("find_update_one_not_ps".equals(methodName)){
+                pressJob = new PressJob(new PressJob.PostgresqlOperatorAdapter() {
+                    @Override
+                    public void execute() throws SQLException {
+                        operator.find_update_one_not_ps();
                     }
                 });
             }

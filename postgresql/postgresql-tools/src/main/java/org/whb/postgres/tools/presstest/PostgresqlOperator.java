@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.postgresql.util.PGobject;
+
 /**
  * 集合的_id必须是连续的正整数
  * @author whb
@@ -66,6 +68,7 @@ public class PostgresqlOperator {
 
     /**
      * 随机_id查询
+     * 如果用PreparedStatement
      * @param database
      * @throws SQLException 
      */
@@ -79,6 +82,25 @@ public class PostgresqlOperator {
             int userId = new Random().nextInt(max_Id) + 1;
             ps_select.setObject(1, userId);
             rs = ps_select.executeQuery();
+            if(rs.next()){
+                return new Object[]{rs.getInt("_id"), rs.getObject("data")};
+            }
+        } finally {
+            close(rs);
+            close(ps_select);
+            close(connection);
+        }
+        return null;
+    }
+    public Object[] find_first_not_ps() throws SQLException{
+        Connection connection = null;
+        Statement ps_select = null;
+        ResultSet rs = null;
+        try {
+            connection = client.getDataSource().getConnection();
+            ps_select = connection.createStatement();
+            int userId = new Random().nextInt(max_Id) + 1;
+            rs = ps_select.executeQuery("select * from " + tableName + " where _id = " + userId);
             if(rs.next()){
                 return new Object[]{rs.getInt("_id"), rs.getObject("data")};
             }
@@ -222,6 +244,21 @@ public class PostgresqlOperator {
                 ps_update.setObject(2, objs[0]);
                 ps_update.setObject(1, objs[1]);
                 ps_update.executeUpdate();
+            } finally {
+                close(ps_update);
+                close(connection);
+            }
+        }
+    }
+    public void find_update_one_not_ps() throws SQLException{
+        Object[] objs = find_first_not_ps();
+        if(objs != null){
+            Connection connection = null;
+            Statement ps_update = null;
+            try {
+                connection = client.getDataSource().getConnection();
+                ps_update = connection.createStatement();
+                ps_update.executeUpdate("update " + tableName + " set data = '" + ((PGobject)objs[1]).getValue() + "' where _id = " + objs[0]);
             } finally {
                 close(ps_update);
                 close(connection);

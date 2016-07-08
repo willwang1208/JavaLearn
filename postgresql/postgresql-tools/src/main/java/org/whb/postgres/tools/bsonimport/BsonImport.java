@@ -108,22 +108,26 @@ public class BsonImport {
                             String jsonString = JSON.serialize(obj);
                             
                             if(count == 0){
-                                //建表
-                                String idType;
-                                if(id instanceof Integer){
-                                    idType = "int";
-                                }else if(id instanceof Long){
-                                    idType = "int8";
-                                }else if(id instanceof ObjectId){
-                                    idType = "char(" + id.toString().length() + ")";
-                                }else{
-                                    idType = "varchar(" + id.toString().length() * 10 + ")";  //FIXME
+                                try {
+                                    //建表
+                                    String idType;
+                                    if(id instanceof Integer){
+                                        idType = "int";
+                                    }else if(id instanceof Long){
+                                        idType = "int8";
+                                    }else if(id instanceof ObjectId){
+                                        idType = "char(" + id.toString().length() + ")";
+                                    }else{
+                                        idType = "varchar(" + id.toString().length() * 10 + ")";  //FIXME
+                                    }
+                                    ps_create = connection.prepareStatement("CREATE TABLE " + tableName + " ( "
+                                            + "_id " + idType + " primary key, "
+                                            + "data jsonb not null default '{}' "
+                                            + ")");
+                                    ps_create.executeUpdate();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                                ps_create = connection.prepareStatement("CREATE TABLE " + tableName + " ( "
-                                        + "_id " + idType + " primary key, "
-                                        + "data jsonb not null default '{}' "
-                                        + ")");
-                                ps_create.executeUpdate();
                             }
                             
                             ps_insert.setObject(1, id);

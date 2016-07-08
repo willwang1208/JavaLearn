@@ -30,7 +30,10 @@ public class PressJob implements Runnable {
                 adapter.execute();
             } catch (Exception e) {
                 exceptionCount ++;
-//                e.printStackTrace();
+                System.out.println(e.getMessage());
+                if(exceptionCount % 500 == 0){
+                    e.printStackTrace();
+                }
             }
             loopCount ++;
         }
