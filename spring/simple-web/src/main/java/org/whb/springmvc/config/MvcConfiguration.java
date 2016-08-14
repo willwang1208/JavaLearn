@@ -150,9 +150,9 @@ public class MvcConfiguration extends WebMvcConfigurationSupport{
     /**
      * velocity视图
      * <mvc:velocity-configurer resource-loader-path="/WEB-INF/vm/"/>
-    <mvc:view-resolvers>
-        <mvc:velocity cache-views="false" suffix=".vm"/>
-    </mvc:view-resolvers>
+           <mvc:view-resolvers>
+           <mvc:velocity cache-views="false" suffix=".vm"/>
+       </mvc:view-resolvers>
      * @return
      */
     @Bean
@@ -171,8 +171,6 @@ public class MvcConfiguration extends WebMvcConfigurationSupport{
 //        configurer.setResourceLoaderPath("classpath:view/");
         return configurer;
     }
-    
-    
     
     /**
      * 上传文件解析器，依赖commons-fileupload，name必须是multipartResolver

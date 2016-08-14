@@ -1,8 +1,14 @@
 package org.whb.springmvc.config;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -12,9 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -25,15 +29,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.whb.springmvc.interceptor.HelloWorldAsyncUncaughtExceptionHandler;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 /**
- * Spring上下文配置
+ * Spring上下文配置。Import了PropertiesConfiguration
  * 
  * <p>
  * 注解@ComponentScan配置了扫描组件的位置（包），排除了@Controller
- * 
- * </p>
- * <p>
- * 注解@PropertySources和@PropertySource配置了资源文件，加载到Environment
  * </p>
  * <p>
  * 注解@EnableTransactionManagement中引用TransactionManagementConfigurationSelector， 导入了声明性事务相关bean支持
@@ -47,6 +49,7 @@ import org.whb.springmvc.interceptor.HelloWorldAsyncUncaughtExceptionHandler;
  * 必须定义@Bean CacheManager，可以通过实现CachingConfigurer接口来完成。
  * 
  * </p>
+ * 
  * @author whb
  *
  */
@@ -55,12 +58,10 @@ import org.whb.springmvc.interceptor.HelloWorldAsyncUncaughtExceptionHandler;
         value = { "org.whb.**.service", "org.whb.**.repository", "org.whb.**.controller" }, 
         excludeFilters = {@ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class) 
         })
-@PropertySources(value = { 
-        @PropertySource(value = "classpath:/datasource.properties", ignoreResourceNotFound = true)
-        })
 @EnableTransactionManagement
 @EnableAsync
 @EnableCaching(proxyTargetClass = true)
+@Import(value = PropertiesConfiguration.class)
 public class ServiceConfiguration implements AsyncConfigurer{
     
     /**
@@ -69,6 +70,9 @@ public class ServiceConfiguration implements AsyncConfigurer{
      */
     @Autowired
     private Environment env;
+    
+    @Resource(name = "dbProperties")
+    private Properties properties;
 
     /*@Bean
     public DataSource driverManagerDataSource() {
@@ -81,45 +85,36 @@ public class ServiceConfiguration implements AsyncConfigurer{
         return source;
     }*/
     
-    /*@Bean
+    @Bean(name = "dbcp", destroyMethod = "close")
     public DataSource dbcpDataSource() {
         BasicDataSource source = new BasicDataSource();
-        source.setDriverClassName(env.getRequiredProperty("jdbc.driver"));
-        source.setUrl(env.getRequiredProperty("jdbc.url"));
-        source.setUsername(env.getRequiredProperty("jdbc.username"));
-        source.setPassword(env.getRequiredProperty("jdbc.password"));
+        source.setDriverClassName(properties.getProperty("jdbc.dbcp.driver"));
+        source.setUrl(properties.getProperty("jdbc.dbcp.url"));
+        source.setUsername(properties.getProperty("jdbc.dbcp.username"));
+        source.setPassword(properties.getProperty("jdbc.dbcp.password"));
         return source;
-    }*/
+    }
     
-//    @Bean(destroyMethod = "close")
-//    public DataSource c3p0DataSource() throws PropertyVetoException {
-//        ComboPooledDataSource source = new ComboPooledDataSource();
-//        source.setDriverClass(env.getRequiredProperty("jdbc.driver"));
-//        source.setJdbcUrl(env.getRequiredProperty("jdbc.url"));
-//        source.setUser(env.getRequiredProperty("jdbc.username"));
-//        source.setPassword(env.getRequiredProperty("jdbc.password"));
-//        
-//        source.setInitialPoolSize(env.getProperty("jdbc.c3p0.InitialPoolSize", Integer.class, 4));
-//        source.setMaxPoolSize(env.getProperty("jdbc.c3p0.MaxPoolSize", Integer.class, 16));
-//        source.setMinPoolSize(env.getProperty("jdbc.c3p0.MinPoolSize", Integer.class, 4));
-//        source.setMaxIdleTime(env.getProperty("jdbc.c3p0.MaxIdleTime", Integer.class, 60));
-//        source.setAcquireIncrement(env.getProperty("jdbc.c3p0.AcquireIncrement", Integer.class, 2));
-//        source.setMaxStatements(env.getProperty("jdbc.c3p0.MaxStatements", Integer.class, 0));
-//        source.setIdleConnectionTestPeriod(env.getProperty("jdbc.c3p0.IdleConnectionTestPeriod", Integer.class, 1800));
-//        source.setAcquireRetryAttempts(env.getProperty("jdbc.c3p0.AcquireRetryAttempts", Integer.class, 10));
-//        source.setBreakAfterAcquireFailure(env.getProperty("jdbc.c3p0.BreakAfterAcquireFailure", Boolean.class, false));
-//        source.setTestConnectionOnCheckout(env.getProperty("jdbc.c3p0.TestConnectionOnCheckout", Boolean.class, false));
-//        
-//        return source;
-//    }
-
-    /**
-     * 用于支持Bean属性的占位符替换，如：在注解中使用占位符@Value("${db.driver}")
-     * @return
-     */
-    @Bean
-    public PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-        return new PropertySourcesPlaceholderConfigurer();
+    @Bean(name = "c3p0", destroyMethod = "close")
+    public DataSource c3p0DataSource() throws PropertyVetoException {
+        ComboPooledDataSource source = new ComboPooledDataSource();
+        source.setDriverClass(env.getRequiredProperty("jdbc.c3p0.driver"));
+        source.setJdbcUrl(env.getRequiredProperty("jdbc.c3p0.url"));
+        source.setUser(env.getRequiredProperty("jdbc.c3p0.username"));
+        source.setPassword(env.getRequiredProperty("jdbc.c3p0.password"));
+        
+        source.setInitialPoolSize(env.getProperty("jdbc.c3p0.InitialPoolSize", Integer.class, 4));
+        source.setMaxPoolSize(env.getProperty("jdbc.c3p0.MaxPoolSize", Integer.class, 16));
+        source.setMinPoolSize(env.getProperty("jdbc.c3p0.MinPoolSize", Integer.class, 4));
+        source.setMaxIdleTime(env.getProperty("jdbc.c3p0.MaxIdleTime", Integer.class, 60));
+        source.setAcquireIncrement(env.getProperty("jdbc.c3p0.AcquireIncrement", Integer.class, 2));
+        source.setMaxStatements(env.getProperty("jdbc.c3p0.MaxStatements", Integer.class, 0));
+        source.setIdleConnectionTestPeriod(env.getProperty("jdbc.c3p0.IdleConnectionTestPeriod", Integer.class, 1800));
+        source.setAcquireRetryAttempts(env.getProperty("jdbc.c3p0.AcquireRetryAttempts", Integer.class, 10));
+        source.setBreakAfterAcquireFailure(env.getProperty("jdbc.c3p0.BreakAfterAcquireFailure", Boolean.class, false));
+        source.setTestConnectionOnCheckout(env.getProperty("jdbc.c3p0.TestConnectionOnCheckout", Boolean.class, false));
+        
+        return source;
     }
     
     /**

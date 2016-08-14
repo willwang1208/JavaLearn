@@ -41,11 +41,6 @@ public class AppController {
     @Autowired
     IHelloWorldService helloWorldService;
     
-    @RequestMapping(value="/home")
-    public String home() {
-        return "home";
-    }
-	
     /**
      * 执行groovy脚本，需要配置 @link ScriptFactoryPostProcessor
      * @see org.whb.springmvc.config.ServiceConfiguration
@@ -134,6 +129,15 @@ public class AppController {
         model.addAttribute("count", count);
         return "upload";
     }
+    @RequestMapping(value="/to-upload")
+    public String toUpload(ModelMap model) {
+        model.addAttribute("count", 0);
+        return "upload";
+    }
+    
+    
+    
+    
     
     /*
      * TODO  BinderController.java  表单   validator editor

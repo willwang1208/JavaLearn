@@ -46,7 +46,7 @@ monitorInterval: 每隔1800秒，自动监控该配置文件是否有变化，�
             <DefaultRolloverStrategy max="20"/>
         </RollingFile>
         
-        <RollingFile name="rolling_file_g" fileName="${rolling_file_g_name}" filePattern="${rolling_file_g_name}">
+        <RollingFile name="rolling_file_g" fileName="${rolling_file_g_name}" filePattern="${rolling_file_g_pattern}">
             <PatternLayout pattern="${log_pattern_3}"/>
             <!-- 设置每1小时切分一次日志 -->
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
