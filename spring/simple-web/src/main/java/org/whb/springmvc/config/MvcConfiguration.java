@@ -1,5 +1,6 @@
 package org.whb.springmvc.config;
 
+import java.util.Locale;
 import java.util.Properties;
 
 import org.springframework.context.annotation.Bean;
@@ -9,10 +10,12 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -194,47 +197,20 @@ public class MvcConfiguration extends WebMvcConfigurationSupport{
         return resolver;
     }
     
-    
-    
-    
-    
-
-//    @Bean
-//    public DefaultServletHttpRequestHandler createDefaultServletHttpRequestHandler() {
-//        return new DefaultServletHttpRequestHandler();
-//    }
-    
-
-    
-//    @Override
-//    protected Validator getValidator() {
-//        LocalValidatorFactoryBean localValidatorFactoryBean =
-//                new LocalValidatorFactoryBean();
-//        localValidatorFactoryBean.setProviderClass(HibernateValidator.class);
-//        localValidatorFactoryBean.setValidationMessageSource(messageSource());
-//        return localValidatorFactoryBean;
-//    }
-//
-    
-//
-//    @Bean
-//    public MessageSource messageSource() {
-//        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-//        messageSource.setBasenames("classpath:messsages", "classpath:org/hibernate/validator/ValidationMessages");
-//        messageSource.setUseCodeAsDefaultMessage(false);
-//        messageSource.setDefaultEncoding(env.getProperty("encoding"));
-//        messageSource.setCacheSeconds(60);
-//        return messageSource;
-//    }
-//
-//    @Bean
-//    public LocaleResolver localeResolver() {
-//        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-//        cookieLocaleResolver.setCookieName("language");
-//        cookieLocaleResolver.setCookieMaxAge(-1);
-//        cookieLocaleResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
-//        return cookieLocaleResolver;
-//    }
+    /**
+     * 按Cookie解析区域的解析器
+     * 此外还有 AcceptHeaderLocaleResolver、SessionLocaleResolver、FixedLocaleResolver
+     * 获取Local: Locale locale = LocaleContextHolder.getLocale();
+     * @return
+     */
+    @Bean
+    public LocaleResolver localeResolver() {
+        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
+        cookieLocaleResolver.setCookieName("language");
+        cookieLocaleResolver.setCookieMaxAge(-1);
+        cookieLocaleResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
+        return cookieLocaleResolver;
+    }
     
     /**
      * Override：开启异步Servlet支持
@@ -259,7 +235,7 @@ public class MvcConfiguration extends WebMvcConfigurationSupport{
     }
     
     /**
-     * Override：注册Interceptor  TODO
+     * Override：注册Interceptor
      */
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
@@ -267,4 +243,18 @@ public class MvcConfiguration extends WebMvcConfigurationSupport{
         localeChangeInterceptor.setParamName("language");
         registry.addInterceptor(localeChangeInterceptor);
     }
+    
+//  @Bean
+//  public DefaultServletHttpRequestHandler createDefaultServletHttpRequestHandler() {
+//      return new DefaultServletHttpRequestHandler();
+//  }
+  
+//  @Override
+//  protected Validator getValidator() {
+//      LocalValidatorFactoryBean localValidatorFactoryBean =
+//              new LocalValidatorFactoryBean();
+//      localValidatorFactoryBean.setProviderClass(HibernateValidator.class);
+//      localValidatorFactoryBean.setValidationMessageSource(messageSource());
+//      return localValidatorFactoryBean;
+//  }
 }

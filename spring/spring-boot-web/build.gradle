@@ -1,0 +1,54 @@
+//创建eclipse项目执行：gradle eclipse
+//打包（清除编译检查构建）执行：gradle clean compileJava check build
+
+//build插件，用于构建胖jar
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'spring-boot-web'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    //一般web应用只要依赖spring-boot-starter-web就可以了，默认内嵌的web容器是tomcat
+    compile("org.springframework.boot:spring-boot-starter-web:1.4.0.RELEASE") 
+    //{
+    //    exclude module: "spring-boot-starter-tomcat"
+    //}
+    //compile("org.springframework.boot:spring-boot-starter-jetty:1.4.0.RELEASE")
+
+    //如果需要监控应用运行中的状态，增加依赖spring-boot-starter-actuator
+    compile("org.springframework.boot:spring-boot-starter-actuator:1.4.0.RELEASE")
+    
+    //如果需要使用jdbc，增加依赖spring-boot-starter-jdbc
+    compile("org.springframework.boot:spring-boot-starter-jdbc:1.4.0.RELEASE")
+
+    //如果需要使用单元测试框架，增加依赖spring-boot-starter-test
+    testCompile("org.springframework.boot:spring-boot-starter-test:1.4.0.RELEASE")
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '2.3'
+//}

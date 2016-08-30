@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="examples">
+
+    <!-- 参考更多  http://www.mybatis.org/mybatis-3/zh/sqlmap-xml.html -->
+
+    <!-- select -->
+    <select id="query_batch_for_report" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT *, a.retention retention_3, b.retention retention_7 
+        FROM common_st${_sys_sep_id} 
+        LEFT JOIN retention${_sys_sep_id} a 
+        ON common_st.day = a.active_date AND a.date_diff = #{date_diff} 
+        LEFT JOIN retention${_sys_sep_id} b 
+        ON common_st.day = b.active_date AND b.date_diff = #{date_diff_7} 
+        ORDER BY common_st.day DESC;
+    </select>
+
+    <select id="query_commonst" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM common_st${_sys_sep_id} 
+        WHERE cid = #{cid} AND TO_DAYS(day) > (TO_DAYS(current_date()) - 30 ) 
+        ORDER BY day ASC;
+    </select>
+    
+    <select id="query_mcc_natural_install" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT SUM(num) num, tm FROM mcc_natural_install 
+        WHERE TO_DAYS(tm) > (TO_DAYS(current_date()) - 30 ) 
+        <if test="type != null">
+            AND mcc = #{type} 
+        </if>
+        GROUP BY tm
+        ORDER BY tm ASC;
+    </select>
+
+    <select id="query_point" resultType="java.util.HashMap">
+        SELECT * FROM check_point 
+        WHERE DATE_FORMAT(timestp, '%Y-%m-%d') = #{ddate} 
+        ORDER BY timestp ASC;
+    </select>
+    
+    <select id="query_new_levelst" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT level_st.*,level_more_st.*,n_retry_top10.*,level_distribute.num dis_num,adst2.tms_2 tms_2,adst2_2.tms_1 tms_1 FROM level_st 
+        LEFT JOIN level_more_st ON level_st.day = level_more_st.day AND level_st.level = level_more_st.level 
+        LEFT JOIN n_retry_top10 ON level_st.day = n_retry_top10.day AND level_st.level = n_retry_top10.lvl 
+        LEFT JOIN level_distribute ON level_st.day = level_distribute.day AND level_st.level = level_distribute.lvl 
+        LEFT JOIN (SELECT SUM(tms) tms_2, day, a FROM ad_video_st2 WHERE b = 0 AND DAY = #{ddate} GROUP BY day, a) adst2 ON level_st.day = adst2.day AND level_st.level = (adst2.a - 10000) 
+        LEFT JOIN (SELECT SUM(tms) tms_1, day, a FROM ad_video_st2 WHERE b != 0 AND b != 1 AND DAY = #{ddate} GROUP BY day, a) adst2_2 ON level_st.day = adst2_2.day AND level_st.level = (adst2_2.a - 10000) 
+        WHERE level_st.day = #{ddate} ORDER BY level_st.level ASC;
+    </select>
+    
+    <select id="query_newguyguide" resultType="java.util.HashMap" parameterType="java.lang.String">
+        SELECT * FROM new_guy_guide WHERE day = #{ddate} ORDER BY level ASC;
+    </select>
+    
+    <select id="query_goldpropst" resultType="java.util.HashMap" parameterType="java.lang.Integer">
+        SELECT * FROM gold_prop_st 
+        WHERE TO_DAYS(day) > (TO_DAYS(current_date()) - 15 ) AND type = ${_parameter} 
+        ORDER BY day ASC;
+    </select>
+    
+    <select id="query_dic" resultType="java.util.HashMap">
+        SELECT DISTINCT prop_id id, type tp FROM gold_prop_st ORDER BY prop_id ASC limit 15;
+    </select>
+    
+    <select id="query_retention_cm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT * FROM retention_${_sys_sep_id} 
+        LEFT JOIN father_channel_st 
+        ON father_channel_st.cid = '${_sys_sep_id}' AND retention_${_sys_sep_id}.install_date = father_channel_st.tm 
+        WHERE TO_DAYS(install_date) > (TO_DAYS(CURRENT_DATE()) - 122) ORDER BY install_date DESC;
+    </select>
+    
+    <select id="query_retention_pay_first_week" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT * FROM first_pay_track_week 
+        LEFT JOIN 
+            (SELECT COUNT(userId) diu, 
+            DATE_FORMAT(SUBDATE(first_pay_time,DATE_FORMAT(first_pay_time,'%w')-1),'%Y-%m-%d') fpt_ws, 
+            DATE_FORMAT(SUBDATE(first_pay_time,DATE_FORMAT(first_pay_time,'%w')-7),'%Y-%m-%d') fpt_we 
+            FROM pay_user_detail 
+            <where>
+                <if test="type != null">
+                sector = #{type} 
+                </if>
+                <if test="systemName != null">
+                AND ${systemName} 
+                </if>
+                AND TO_DAYS(first_pay_time) > (TO_DAYS(CURRENT_DATE()) - 122) 
+            </where>
+            GROUP BY fpt_ws) a 
+        ON first_pay_track_week.install_date = a.fpt_ws 
+        WHERE TO_DAYS(install_date) > (TO_DAYS(CURRENT_DATE()) - 122) 
+        <if test="cid != null">
+            AND cid = #{cid} 
+        </if>
+        ORDER BY install_date DESC;
+    </select>
+    
+    <select id="query_channel_activate" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(tm,'%Y-%m-%d %H') f_time, COUNT(id) user_count, cid FROM ad_activate 
+        WHERE DATE_FORMAT(tm,'%Y-%m-%d') >= #{endday} AND DATE_FORMAT(tm,'%Y-%m-%d') &lt;= #{startday} 
+        <if test="type != null">
+            and cid = #{type}
+        </if>
+        GROUP BY cid, f_time ORDER BY f_time DESC, cid ASC
+    </select>
+     
+    <select id="query_charge_install_g_day" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT main.install_date install_date, main.today today, tmp.install_num, main.money FROM 
+        (SELECT install_date, today, SUM(money) money FROM charge_install GROUP BY install_date, today )
+        main
+        LEFT JOIN (SELECT DISTINCT install_date,SUM(install_num) install_num FROM charge_install GROUP BY install_date, today) tmp
+        ON tmp.install_date = main.install_date 
+        <if test="install_date != null and install_date != ''">
+            WHERE main.install_date >= #{install_date}
+        </if>
+
+        ORDER BY main.install_date DESC, main.today ASC
+    </select>
+    
+    <select id="query_user_order_g_todayhour_ios" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(create_time,'%Y-%m-%d %H') f_time, SUM(money) s_money FROM f_user_order 
+        WHERE verifyjson != '' AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{ddate} 
+        GROUP BY f_time;
+    </select>
+    
+    <select id="query_user_order_g_todayhour_android" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(c.create_time,'%Y-%m-%d %H') f_time, SUM(c.money) s_money 
+        FROM f_user_order c 
+        WHERE DATE_FORMAT(c.create_time,'%Y-%m-%d') = #{ddate} 
+        AND NOT EXISTS (SELECT 1 FROM (SELECT user_id FROM (SELECT SUM(money) money, user_id FROM f_user_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d') = #{ddate} GROUP BY user_id) a WHERE a.money>200) b WHERE b.user_id = c.user_id) 
+        GROUP BY f_time;
+    </select>
+    
+    <select id="query_user_order_g_todayhour_cmgp" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(c.create_time,'%Y-%m-%d %H') f_time, SUM(c.money) s_money 
+        FROM f_user_order c 
+        WHERE DATE_FORMAT(c.create_time,'%Y-%m-%d') = #{ddate} AND verifyjson != 'cm' AND money IN (0.99, 4.99, 19.99, 49.99, 99.99)
+        GROUP BY f_time;
+    </select>
+    
+    <select id="query_redeem_code_1" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT DATE_FORMAT(CURRENT_DATE(),'%Y-%m-%d') day, aa.*, bb.* 
+        FROM redeem_code_statistics aa
+        INNER JOIN (SELECT UPPER(batch_type) btype FROM redeem_code_conf WHERE gen_counts = 1) bb 
+        ON aa.redeem_code LIKE CONCAT(bb.btype, '%')
+    </select>
+    
+    <select id="query_pay_user_cm_detail" resultType="java.util.HashMap">
+        SELECT a.userId, a.verdorid, a.createTime, a.sector, a.systemName, b.first_pay_time, b.last_pay_time, b.pay_counts, b.pay_total_money 
+        FROM user_sns_info a 
+        INNER JOIN (SELECT user_id, MAX(create_time) last_pay_time, MIN(create_time) first_pay_time, COUNT(user_id) pay_counts, SUM(money) pay_total_money FROM f_user_order GROUP BY user_id) b 
+        ON a.userId = b.user_id;
+    </select>
+    
+    <select id="query_pay_usercount_daily" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT COUNT(user_id) user_count, level 
+        FROM (SELECT user_id, MAX(level) level FROM f_user_order 
+            <if test="ddate != null">
+                WHERE DATE_FORMAT(create_time,'%Y-%m-%d') = #{ddate} 
+            </if>
+            GROUP BY user_id) a 
+        GROUP BY level ORDER BY level;
+    </select>
+    
+    <select id="query_user_lost" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT *, ROUND(dau_3_lost/dau,4) dau_eff_3, ROUND(dau_7_lost/dau,4) dau_eff_7, 
+            ROUND(tongguan_3_lost/tongguan,4) tongguan_eff_3, ROUND(tongguan_7_lost/tongguan,4) tongguan_eff_7, 
+            ROUND(jiangyou_3_lost/tongguan,4) jiangyou_eff_3, ROUND(jiangyou_7_lost/jiangyou,4) jiangyou_eff_7
+        FROM lost_more_st INNER JOIN 
+        (SELECT DAY, SUM(stay) user_stay, 
+            SUM(login_lost_rate_7_fz) login_lost_rate_7_fz, SUM(login_lost_rate_7_fz2) login_lost_rate_7_fz2, 
+            SUM(login_lost_rate_3_fz) login_lost_rate_3_fz, SUM(login_lost_rate_3_fz2) login_lost_rate_3_fz2,
+            ROUND((SUM(login_lost_rate_3_fz)+SUM(login_lost_rate_3_fz2))/SUM(stay),4) login_lost_eff_3,
+            ROUND((SUM(login_lost_rate_7_fz)+SUM(login_lost_rate_7_fz2))/SUM(stay),4) login_lost_eff_7
+            FROM level_more_st GROUP BY DAY) a 
+        ON lost_more_st.day = a.day WHERE TO_DAYS(lost_more_st.day) > (TO_DAYS(CURRENT_DATE()) - 60) ORDER BY lost_more_st.day DESC
+    </select>
+    
+    <select id="query_act_cm" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT f_time, cid, SUM(num) num FROM 
+        (
+        <foreach collection="tables" item="tno" separator="UNION ALL">
+            SELECT DATE_FORMAT(tm,'%Y-%m-%d %H') f_time, COUNT(*) num, cid FROM cm_channel_install_${tno} 
+            <if test="ddate != null">
+                WHERE DATE_FORMAT(tm,'%Y-%m-%d') = #{ddate} 
+            </if>
+            GROUP BY f_time, cid 
+        </foreach>
+        )
+        alldata GROUP BY f_time, cid
+    </select>
+    
+    <select id="query_act_cm_parent" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM 
+        (
+        <foreach collection="pgs" item="pg" separator="UNION ALL">
+            SELECT f_time, '${pg}' cid, SUM(num) num FROM 
+            (
+            <foreach collection="tables" item="tno" separator="UNION ALL">
+                SELECT DATE_FORMAT(tm,'%Y-%m-%d') f_time, COUNT(*) num FROM cm_channel_install_${tno} 
+                WHERE DATE_FORMAT(tm,'%Y-%m-%d') &lt;= #{enddate} AND DATE_FORMAT(tm,'%Y-%m-%d') >= #{startdate} AND cid LIKE '%${pg}%' 
+                GROUP BY f_time 
+            </foreach>
+            )
+            alldata GROUP BY f_time
+        </foreach>
+        ) alldata2 
+        ORDER BY f_time DESC
+    </select>
+    
+    <!-- 这个“where”标签会知道如果它包含的标签中有返回值的话，它就插入一个‘where’。此外，如果标签返回的内容是以AND 或OR 开头的，则它会剔除掉。 -->
+    <select id="query_f_user_order_cm" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM f_user_order 
+        <where>
+            verifyjson != "cm" AND money in (0.99,4.99,9.99,19.99,49.99,99.99) 
+            <if test="type != null">
+            AND type = #{type} 
+            </if>
+            <if test="ddate != null">
+            AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{ddate} 
+            </if>
+        </where>
+        ORDER BY money, fmoney, md5;
+    </select>
+    
+    <select id="query_percentile_cm" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM cm_percentile 
+        <where>
+            <if test="type != null">
+            sector = #{type} 
+            </if>
+            <if test="endday != null">
+            AND day >= #{endday} 
+            </if>
+            <if test="startday != null">
+            AND day &lt;= #{startday} 
+            </if>
+        </where>
+        ORDER BY day DESC;
+    </select>
+    
+    
+    <!-- insert update delete -->
+    
+    <insert id="addMsgRecord" parameterType="java.util.HashMap">
+        insert into msg_record (day, totalNum, addFriendNum, addPowerNum, addBlockerNum, acceptFriendNum, 
+        acceptGiftNum, acceptFeedNum, acceptBlockerNum, selectNum, deleteNum, totalUCNum) 
+        values (#{day},#{total},#{add_friend},#{add_power},#{add_blocker},#{accept_friend},
+        #{accept_gift},#{accept_feed},#{accept_blocker},#{select},#{delete},#{total_uc})
+    </insert>
+    
+    <insert id="add_redeem_code_daily" parameterType="java.util.List">
+        insert into n_redeem_code (day, redeem_code, counts, btype) values 
+        <foreach collection="list" item="item" index="index" separator=",">
+        (#{item.day}, #{item.redeem_code}, #{item.counts}, #{item.btype})
+        </foreach>
+    </insert>
+    
+    <insert id="update_f_sms_order_summary" parameterType="java.util.HashMap">
+        INSERT INTO f_sms_order_summary (day, mcc, currency, fmoney, money) 
+        SELECT * FROM 
+        (SELECT DATE_FORMAT(tm,'%Y-%m-%d') day, mcc, currency, SUM(fmoney) fmoney, SUM(money) money FROM f_sms_order 
+        <if test="ddate != null">
+        WHERE DATE_FORMAT(tm,'%Y-%m-%d') = #{ddate}
+        </if>
+        GROUP BY day, mcc, currency) abc
+        ON DUPLICATE KEY UPDATE fmoney = abc.fmoney, money = abc.money
+    </insert>
+    
+    <update id="update_ads_promotion" parameterType="java.util.HashMap">
+        UPDATE ads_promotion SET 
+        prop_gold_limit = #{prop_gold_limit}, 
+        prop_level_limit = #{prop_level_limit}, 
+        reward_num = #{reward_num}, 
+        prop_rate = #{prop_rate}, 
+        prop_amount = #{prop_amount}, 
+        is_pay_user = #{is_pay_user}, 
+        is_odd = #{is_odd}, 
+        is_even = #{is_even},
+        od = #{od},
+        ext = #{ext}  
+        WHERE id = #{_id}
+    </update>
+    
+    
+    <!-- other -->
+    
+    <select id="query_web_common_all" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM ${table_name};
+    </select>
+    <select id="query_web_common_con" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        SELECT * FROM ${table_name} WHERE ${con};
+    </select>
+    <update id="update_web_common" parameterType="java.util.HashMap">
+        UPDATE ${table_name} SET 
+        <foreach collection="items" item="item" separator=",">
+            ${item}
+        </foreach>
+        WHERE ${con}
+    </update>
+    <insert id="insert_web_common" parameterType="java.util.HashMap">
+        INSERT INTO ${table_name} (${cols}) 
+        VALUES (${values})
+    </insert>
+    <delete id="delete_web_common" parameterType="java.util.HashMap">  
+        DELETE FROM ${table_name} WHERE ${con}  
+    </delete>
+
+</mapper>

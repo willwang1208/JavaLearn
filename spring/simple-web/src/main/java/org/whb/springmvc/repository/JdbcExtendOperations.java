@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.whb.springmvc.repository.pojo.Column;
 import org.whb.springmvc.repository.pojo.Index;
 /**
- * 扩展 JdbcOperations 接口
+ * 扩展JdbcOperations接口
  * @author whb
  *
  */

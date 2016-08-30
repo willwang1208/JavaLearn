@@ -141,14 +141,10 @@ public class AppController {
     
     /*
      * TODO  BinderController.java  表单   validator editor
-     * 
-     * TransactionalServiceImpl.java
-     * 
-     * repository   datasource
-     * 
-     * ScheduleServiceImpl.java
-     * 
-     * WebInterfaceController.java
+     * MvcConfiguration
+     * ArrayEditor NonnegativeIntegerEditor UserValidator
+     * WebInterfaceController protobuf
+     * spring-xxx.xml
      * 
      */
 	

@@ -1,14 +1,8 @@
 package org.whb.springmvc.config;
 
-import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -19,26 +13,23 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
+import org.springframework.remoting.rmi.RmiServiceExporter;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scripting.support.ScriptFactoryPostProcessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.whb.springmvc.interceptor.HelloWorldAsyncUncaughtExceptionHandler;
-
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.whb.springmvc.service.IHelloWorldService;
 
 /**
- * Spring上下文配置。Import了PropertiesConfiguration
+ * Spring上下文配置。
  * 
  * <p>
  * 注解@ComponentScan配置了扫描组件的位置（包），排除了@Controller
- * </p>
- * <p>
- * 注解@EnableTransactionManagement中引用TransactionManagementConfigurationSelector， 导入了声明性事务相关bean支持
  * </p>
  * <p>
  * 注解@EnableAsync中引用AsyncConfigurationSelector，导入了异步执行相关bean支持（不是异步Servlet）。
@@ -47,7 +38,13 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  * <p>
  * 注解@EnableCaching中引用CachingConfigurationSelector，导入了缓存相关bean支持，
  * 必须定义@Bean CacheManager，可以通过实现CachingConfigurer接口来完成。
- * 
+ * </p>
+ * <p>
+ * 注解@Import导入了 PropertiesConfiguration、RepositoryConfiguration，这样通过AnnotationConfigWebApplicationContext.register时，
+ * 只需要注册ServiceConfiguration即可。
+ * </p>
+ * <p>
+ * 注解@EnableScheduling启用定时任务相关支持，通过给任务方法增加@Scheduled注解实现调度
  * </p>
  * 
  * @author whb
@@ -55,67 +52,14 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 @Configuration
 @ComponentScan(
-        value = { "org.whb.**.service", "org.whb.**.repository", "org.whb.**.controller" }, 
+        value = { "org.whb.**.service", "org.whb.**.controller" }, 
         excludeFilters = {@ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class) 
         })
-@EnableTransactionManagement
 @EnableAsync
 @EnableCaching(proxyTargetClass = true)
-@Import(value = PropertiesConfiguration.class)
+@EnableScheduling
+@Import(value = { PropertiesConfiguration.class, RepositoryConfiguration.class })
 public class ServiceConfiguration implements AsyncConfigurer{
-    
-    /**
-     * 环境配置Environment，继承了PropertyResolver。
-     * 也可以直接通过ApplicationContext实例的getEnvironment()方法获得。
-     */
-    @Autowired
-    private Environment env;
-    
-    @Resource(name = "dbProperties")
-    private Properties properties;
-
-    /*@Bean
-    public DataSource driverManagerDataSource() {
-        org.springframework.jdbc.datasource.DriverManagerDataSource source = 
-                new org.springframework.jdbc.datasource.DriverManagerDataSource();
-        source.setDriverClassName(env.getRequiredProperty("jdbc.driver"));
-        source.setUrl(env.getRequiredProperty("jdbc.url"));
-        source.setUsername(env.getRequiredProperty("jdbc.username"));
-        source.setPassword(env.getRequiredProperty("jdbc.password"));
-        return source;
-    }*/
-    
-    @Bean(name = "dbcp", destroyMethod = "close")
-    public DataSource dbcpDataSource() {
-        BasicDataSource source = new BasicDataSource();
-        source.setDriverClassName(properties.getProperty("jdbc.dbcp.driver"));
-        source.setUrl(properties.getProperty("jdbc.dbcp.url"));
-        source.setUsername(properties.getProperty("jdbc.dbcp.username"));
-        source.setPassword(properties.getProperty("jdbc.dbcp.password"));
-        return source;
-    }
-    
-    @Bean(name = "c3p0", destroyMethod = "close")
-    public DataSource c3p0DataSource() throws PropertyVetoException {
-        ComboPooledDataSource source = new ComboPooledDataSource();
-        source.setDriverClass(env.getRequiredProperty("jdbc.c3p0.driver"));
-        source.setJdbcUrl(env.getRequiredProperty("jdbc.c3p0.url"));
-        source.setUser(env.getRequiredProperty("jdbc.c3p0.username"));
-        source.setPassword(env.getRequiredProperty("jdbc.c3p0.password"));
-        
-        source.setInitialPoolSize(env.getProperty("jdbc.c3p0.InitialPoolSize", Integer.class, 4));
-        source.setMaxPoolSize(env.getProperty("jdbc.c3p0.MaxPoolSize", Integer.class, 16));
-        source.setMinPoolSize(env.getProperty("jdbc.c3p0.MinPoolSize", Integer.class, 4));
-        source.setMaxIdleTime(env.getProperty("jdbc.c3p0.MaxIdleTime", Integer.class, 60));
-        source.setAcquireIncrement(env.getProperty("jdbc.c3p0.AcquireIncrement", Integer.class, 2));
-        source.setMaxStatements(env.getProperty("jdbc.c3p0.MaxStatements", Integer.class, 0));
-        source.setIdleConnectionTestPeriod(env.getProperty("jdbc.c3p0.IdleConnectionTestPeriod", Integer.class, 1800));
-        source.setAcquireRetryAttempts(env.getProperty("jdbc.c3p0.AcquireRetryAttempts", Integer.class, 10));
-        source.setBreakAfterAcquireFailure(env.getProperty("jdbc.c3p0.BreakAfterAcquireFailure", Boolean.class, false));
-        source.setTestConnectionOnCheckout(env.getProperty("jdbc.c3p0.TestConnectionOnCheckout", Boolean.class, false));
-        
-        return source;
-    }
     
     /**
      * 用于支持Groovy脚本
@@ -184,54 +128,35 @@ public class ServiceConfiguration implements AsyncConfigurer{
         return new HelloWorldCacheErrorHandler();
     }*/
 
+    /**
+     * 将本地服务开放给外部调用，实现接口 IHelloWorldService 的远程方法调用。见 TestClient.rmiClient()
+     * rmi://123.123.123.123:21001/Hello
+     * @param helloWorldService
+     * @return
+     */
+    @Bean
+    @Autowired
+    public RmiServiceExporter rmiServiceExporter(IHelloWorldService helloWorldService) {
+       RmiServiceExporter rse = new RmiServiceExporter();
+       rse.setServiceName("Hello");
+       rse.setRegistryPort(21001);
+       rse.setServiceInterface(IHelloWorldService.class);
+       rse.setService(helloWorldService);
+       return rse;
+    }
     
-    
-    
-//    @Bean
-//    public RmiProxyFactoryBean service() {
-//        RmiProxyFactoryBean rmiProxy = new RmiProxyFactoryBean();
-//        rmiProxy.setServiceUrl("rmi://127.0.1.1:1099/Service");
-//        rmiProxy.setServiceInterface(RMIService.class);
-//        rmiProxy.setLookupStubOnStartup(false);
-//        return rmiProxy;
-//    }
+    /**
+     * 创建接口 IHelloWorldService 的远程服务的本地代理。
+     * @return
+     */
+    @Bean
+    public RmiProxyFactoryBean rmiProxy() {
+        RmiProxyFactoryBean rmiProxy = new RmiProxyFactoryBean();
+//        rmiProxy.setServiceUrl("rmi://123.123.1.10:18802/Service");
+        rmiProxy.setServiceUrl("rmi://localhost:21001/Hello");
+        rmiProxy.setServiceInterface(IHelloWorldService.class);
+        rmiProxy.setLookupStubOnStartup(false);
+        return rmiProxy;
+    }
 
-    /*@Bean
-    public AnnotationSessionFactoryBean hibernateSessionFactory() {
-        AnnotationSessionFactoryBean sessionFactoryBean = new AnnotationSessionFactoryBean();
-        sessionFactoryBean.setDataSource(c3p0DataSource());
-        sessionFactoryBean.setNamingStrategy(new ImprovedNamingStrategy());
-        sessionFactoryBean.setPackagesToScan("septem.model");
-        sessionFactoryBean.setHibernateProperties(hProps());
-        return sessionFactoryBean;
-    }*/
-    
-//    public SqlSessionFactoryBean mybatisSessionFactory() {
-//        SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
-//        factory.setDataSource(c3p0DataSource());
-//        factory.setMapperLocations(new Resou);
-//        return factory;
-//    }
-    
-
-//    @Bean
-//    public HibernateTransactionManager transactionManager() {
-//        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-//        hibernateTransactionManager.setSessionFactory(sessionFactory().getObject());
-//        return hibernateTransactionManager;
-//    }
-
-//    private Properties hProps() {
-//        Properties p = new Properties();
-//        p.put("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
-//        p.put("hibernate.cache.use_second_level_cache", "true");
-//        p.put("hibernate.cache.use_query_cache", "true");
-//        p.put("hibernate.cache.provider_class", "org.hibernate.cache.EhCacheProvider");
-//        p.put("hibernate.cache.provider_configuration_file_resource_path", "ehcache.xml");
-//        p.put("hibernate.show_sql", "true");
-//        p.put("hibernate.hbm2ddl.auto", "update");
-//        p.put("hibernate.generate_statistics", "true");
-//        p.put("hibernate.cache.use_structured_entries", "true");
-//        return p;
-//    }
 }

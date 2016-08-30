@@ -1,0 +1,9 @@
+[Unit]
+Description=Spring Boot Web Application
+
+[Service]
+ExecStart=/usr/bin/java -jar location_of_jar_file.jar --spring.config.location=location_of_config.properties --spring.profiles.active=profile
+User=jelly
+
+[Install]
+WantedBy=multi-user.target

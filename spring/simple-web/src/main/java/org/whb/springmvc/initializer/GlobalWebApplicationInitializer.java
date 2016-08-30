@@ -1,7 +1,10 @@
 package org.whb.springmvc.initializer;
 
 import java.io.File;
+import java.util.EnumSet;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
@@ -10,6 +13,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.web.WebLoggerContextUtils;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.whb.springmvc.config.HelloWorldConfiguration;
 import org.whb.springmvc.config.MvcConfiguration;
@@ -113,21 +117,19 @@ public class GlobalWebApplicationInitializer implements WebApplicationInitialize
         dispatcher_groovy.addMapping("/gmvc/*");*/
         
 
-        //for hibernate
-//        OpenSessionInViewFilter hibernateSessionInViewFilter = new OpenSessionInViewFilter();  
-//        FilterRegistration.Dynamic filterRegistration = servletContext.addFilter(  
-//                "hibernateFilter", hibernateSessionInViewFilter);  
-//        filterRegistration.addMappingForUrlPatterns(  
-//                EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE), false, "/");  
-//          
-        
-      //4、CharacterEncodingFilter
-//        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-//        characterEncodingFilter.setEncoding("utf-8");
-//        FilterRegistration filterRegistration =
-//                sc.addFilter("characterEncodingFilter", characterEncodingFilter);
-//        filterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "/");
-
+        /**
+         * Filter: Hibernate OpenSessionInViewFilter
+         */
+        /*OpenSessionInViewFilter osivFilter = new OpenSessionInViewFilter();
+        FilterRegistration.Dynamic hfr = servletContext.addFilter("hibernateOpenSessionInViewFilter", osivFilter);
+        hfr.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE), false, "/");*/
+          
+        /**
+         * Filter: CharacterEncodingFilter
+         */
+        CharacterEncodingFilter ceFilter = new CharacterEncodingFilter();
+        ceFilter.setEncoding("UTF-8");
+        FilterRegistration.Dynamic cefr = servletContext.addFilter("characterEncodingFilter", ceFilter);
+        cefr.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "/");
     }
-    
 }

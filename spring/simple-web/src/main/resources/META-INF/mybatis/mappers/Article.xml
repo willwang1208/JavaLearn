@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.whb.springmvc.repository.mapper.ArticleMapper">
+
+    <!-- 参考更多  http://www.mybatis.org/mybatis-3/zh/sqlmap-xml.html -->
+
+    <select id="getAllArticles" resultType="org.whb.springmvc.repository.domain.Article">
+        SELECT * FROM article
+    </select>
+
+    <insert id="insertArticle" parameterType="org.whb.springmvc.repository.domain.Article">
+        INSERT INTO article (title, author, summary, tags)
+        VALUES (#{title}, #{author}, #{summary}, #{tags})
+    </insert>
+    
+    <update id="updateArticle" parameterType="org.whb.springmvc.repository.domain.Article">
+        UPDATE article SET
+            title = #{title}, author = #{author}, summary = #{summary}, tags = #{tags}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteArticle" parameterType="java.lang.Long">
+        DELETE FROM article WHERE id = ${_parameter}
+    </delete>
+    
+    <select id="getArticle" resultType="org.whb.springmvc.repository.domain.Article" parameterType="java.lang.Long">
+        SELECT * FROM article WHERE id = ${_parameter}
+    </select>
+
+</mapper>

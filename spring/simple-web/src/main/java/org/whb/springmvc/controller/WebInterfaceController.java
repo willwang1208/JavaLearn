@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping("/webi")
 public class WebInterfaceController {
     
-    @RequestMapping(value = "/special", method = RequestMethod.POST)
+    @RequestMapping(value = "/common", method = RequestMethod.POST)
 	public void common(HttpServletRequest request, HttpServletResponse response) {
 		int length = request.getContentLength();
 		if(length <= 0){

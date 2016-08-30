@@ -152,6 +152,7 @@ public class HelloWorldController {
         
         ObjectMapper mapper = new ObjectMapper();
         try {
+            //user必须实现序列化
             return mapper.writeValueAsString(user);
         } catch (JsonGenerationException e) {
             e.printStackTrace();

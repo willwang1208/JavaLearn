@@ -1,0 +1,24 @@
+# Convention: Server settings (ServerProperties)
+server:
+  port: 8083
+  address: 127.0.0.1
+  sessionTimeout: 30
+  contextPath: /
+  # Tomcat specifics
+  tomcat:
+    accessLogEnabled: false
+    protocolHeader: x-forwarded-proto
+    remoteIpHeader: x-forwarded-for
+    basedir:
+    backgroundProcessorDelay: 30
+
+# customize settings
+customize:
+  debug: true
+  platform: ios
+  task:
+    name: abc
+    count: 10
+    firstTag: first
+    second-tag: second
+    THIRD_TAG: third

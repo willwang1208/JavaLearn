@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.document.AbstractXlsView;
 /**
  * 依赖poi相关jar包
- * 数据格式成excel的通用view
+ * 数据格式化为excel的通用view
  * TODO
  * @author 
  *

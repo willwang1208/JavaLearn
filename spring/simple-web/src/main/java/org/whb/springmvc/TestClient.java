@@ -7,6 +7,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
+import org.whb.springmvc.service.IHelloWorldService;
 /**
  * 测试Http请求
  * @author whb
@@ -22,10 +25,12 @@ public class TestClient {
 //        cacheGet();
 //        asyncDeferredQueue();
         
-        restGet();
+//        restGet();
 //        restPost();
 //        restPut();
 //        restDelete();
+        
+        rmiClient();
     }
     
     public static void postOnly(){
@@ -133,22 +138,45 @@ public class TestClient {
         doHttp(url, method, contentType, data.getBytes());
     }
     
+    public static void rmiClient(){
+        //创建远程代理
+        RmiProxyFactoryBean rpfb = new RmiProxyFactoryBean();
+        rpfb.setServiceUrl("rmi://localhost:21001/Hello");
+        rpfb.setServiceInterface(IHelloWorldService.class);
+        
+        //发起连接并获得本地代理
+        rpfb.afterPropertiesSet();
+        IHelloWorldService hello = (IHelloWorldService)rpfb.getObject();
+        
+        //执行方法
+        System.out.println(hello.getUser());
+    }
+    
     public static void doHttp(String url, String method, String contentType, byte[] request){
         HttpURLConnection conn = null;
         OutputStream os = null; 
         BufferedReader reader = null;
         try {
             conn = (HttpURLConnection) new URL(url).openConnection();
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setRequestMethod(method);
-            conn.setRequestProperty("Content-Type", contentType);
-            conn.setRequestProperty("Content-Length", String.valueOf(request.length));
+            conn.setUseCaches(false);
+//            conn.setAllowUserInteraction(false);
+//            conn.addRequestProperty("Authorization", "Basic YWRtaW4fYFgjkl5463");
             
-            os = conn.getOutputStream();
-            os.write(request);
-            os.flush();
-            os.close();
+            if("GET".equals(method)){
+                //No need to send a request body for GET requests.
+                
+            }else{
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+                conn.setRequestMethod(method);
+                conn.setRequestProperty("Content-Type", contentType);
+                conn.setRequestProperty("Content-Length", String.valueOf(request.length));
+                
+                os = conn.getOutputStream();
+                os.write(request);
+                os.flush();
+                os.close();
+            }
             
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuffer buf = new StringBuffer();
